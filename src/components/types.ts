@@ -10,6 +10,7 @@ export interface VirtualProps {
   children?: ReactElement;
   uniquekKey?: string;
   height?: number;
+  scrollCantainer?: boolean;
 }
 
 export interface VirtualItemProps {
@@ -31,5 +32,11 @@ export interface ScrollParams<T extends Record<string, unknown>, U extends Eleme
   originData: Array<T>;
   height: number;
   node: U;
-  top: number;
+  scrollCantainer?: boolean;
+}
+
+export interface Scroll {
+  data: Array<Data>;
+  offset: number;
+  allHeight: number;
 }

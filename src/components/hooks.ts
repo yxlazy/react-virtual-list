@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { Data, ScrollParams, ViewportSize } from './types';
+import type { Scroll, ScrollParams, ViewportSize } from './types';
 
 /**
  * Get viewport's height and width
@@ -30,13 +30,18 @@ export const useViewport = (): ViewportSize => {
   return { height, width };
 };
 
-export const useScrollTop = <T extends Element | null>(node: T) => {
+export const useScrollTop = <T extends Element | null>(node?: T) => {
   // 滚动的距离
   const [scrollTop, setScrollTop] = useState(0);
+  const [scrollHeight, setHeight] = useState(0);
 
   const calcScrollTop = useCallback(() => {
     if (node) {
+      setScrollTop(node.scrollTop);
+      setHeight(node.scrollHeight);
+    } else {
       setScrollTop(document.documentElement.scrollTop);
+      setHeight(document.documentElement.scrollHeight);
     }
   }, [node]);
 
@@ -54,17 +59,18 @@ export const useScrollTop = <T extends Element | null>(node: T) => {
     calcScrollTopRef.current();
   }, []);
 
-  return scrollTop;
+  return [scrollTop, scrollHeight];
 };
 
 export const useScroll = <T extends Record<string, unknown>, U extends Element | null>({
   originData,
   height,
   node,
-  top,
+  scrollCantainer,
 }: ScrollParams<T, U>) => {
   const viewport = useViewport();
-  const scrollTop = useScrollTop(node);
+  const [scrollTop, scrollHeight] = useScrollTop(scrollCantainer ? node : window.document.documentElement);
+  const { top: initTop = 0 } = useNodeInitRect(node);
   const [offset, setOffset] = useState(0);
   // 实际渲染的数据
   const [data, setData] = useState<Array<Record<string, unknown>>>([]);
@@ -81,22 +87,23 @@ export const useScroll = <T extends Record<string, unknown>, U extends Element |
 
   const calcViewportData = useCallback(() => {
     const h = height === 0 ? 1 : height;
-
     // 当前视口能展示的元素个数
     const showNum = Math.ceil(viewport.height / h);
     // 隐藏元素个数
-    const start = Math.floor(scrollTop / h),
-      end = start + showNum;
+    let start = Math.floor((scrollTop - initTop) / h),
+      end;
 
-    if (end === showNum) {
+    start = start < 0 ? 0 : start;
+    end = start + showNum;
+
+    if (scrollTop <= initTop) {
       setOffset(0);
-    } else if (end > showNum && end < originData.length) {
-      setOffset(scrollTop - top);
-    } else if (end >= originData.length) {
-      setOffset(scrollTop - h - top);
+    } else if (scrollTop > initTop && scrollTop < scrollHeight - viewport.height) {
+      setOffset(scrollTop - initTop);
     }
+
     setData(originData.slice(start, end));
-  }, [originData, height, viewport.height, scrollTop, top]);
+  }, [originData, height, viewport.height, scrollTop, initTop, scrollHeight]);
 
   useEffect(() => {
     window.addEventListener('scroll', calcViewportData);
@@ -110,11 +117,24 @@ export const useScroll = <T extends Record<string, unknown>, U extends Element |
     setContainerHeight();
   }, [calcViewportData]);
 
-  return [data, offset] as [Array<Data>, number];
+  return { data, offset, allHeight: allHeightRef.current } as Scroll;
 };
 
 export const useLatest = (v: any) => {
   const latestRef = useRef(v);
   latestRef.current = v;
   return latestRef.current;
+};
+
+export const useNodeInitRect = (node: Element | null) => {
+  const [rect, setRect] = useState<DOMRect | null>(null);
+
+  useEffect(() => {
+    if (node) {
+      const rect = node.getBoundingClientRect();
+
+      setRect(rect);
+    }
+  }, [node]);
+  return (rect || {}) as DOMRect;
 };
