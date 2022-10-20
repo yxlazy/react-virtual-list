@@ -1,5 +1,1 @@
-console.log('rollup build...');
-
-export default function test() {
-  console.log('test function....');
-}
+export {default as Virtual} from "./components/Virtual"
