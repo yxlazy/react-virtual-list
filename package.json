@@ -1,7 +1,8 @@
 {
   "name": "react-virtual-list",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -9,6 +10,8 @@
     "build": "rollup -c"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^23.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-typescript": "^9.0.1",
     "@types/react": "^18.0.21",
     "@types/react-dom": "^18.0.6",
@@ -16,9 +19,13 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rollup": "^3.2.2",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
     "tslib": "^2.4.0",
     "typescript": "^4.8.4",
-    "vite": "^3.1.8",
-    "react-virtual-list": "./dist/react-virtual-list.pro.esm.js"
+    "vite": "^3.1.8"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }

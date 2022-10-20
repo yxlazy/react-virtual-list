@@ -1,5 +1,8 @@
 // import pkg from "./package.json" assert {type: 'json'};
 import typescript from '@rollup/plugin-typescript';
+import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import external from 'rollup-plugin-peer-deps-external';
 import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const pkg = require('./package.json');
@@ -8,21 +11,22 @@ export default {
   input: './src/index.ts',
   output: [
     {
-      file: `dist/${pkg.name}.pro.esm.js`,
-      format: 'esm'
+      file: pkg.module,
+      format: 'esm',
+      sourcemap: true
     },
     {
-      file: `dist/${pkg.name}.pro.umd.js`,
-      format: 'umd',
+      file: pkg.main,
+      format: 'cjs',
       name: 'ReactVirtual',
-      globals: {
-        react: 'React',
-        'react-dom': 'ReactDOM',
-      },
+      sourcemap: true
     },
   ],
   plugins: [
-    typescript({compilerOptions: {"jsx": "react"}})
+    external(),
+    resolve(),
+    commonjs(),
+    typescript({ tsconfig: './tsconfig.json' })
   ],
   external: [
     "react",
