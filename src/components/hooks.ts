@@ -10,7 +10,8 @@ export const useViewport = (): ViewportSize => {
     [height, setHeight] = useState(0);
 
   const calcViewport = useCallback(() => {
-    const { clientHeight, clientWidth } = document.documentElement;
+    const clientHeight = document.documentElement.clientHeight || document.body.clientHeight,
+      clientWidth = document.documentElement.clientWidth || document.body.clientWidth;
 
     setHeight(clientHeight);
     setWidth(clientWidth);
@@ -40,8 +41,8 @@ export const useScrollTop = <T extends Element | null>(node?: T) => {
       setScrollTop(node.scrollTop);
       setHeight(node.scrollHeight);
     } else {
-      setScrollTop(document.documentElement.scrollTop);
-      setHeight(document.documentElement.scrollHeight);
+      setScrollTop(document.documentElement.scrollTop || document.body.scrollTop);
+      setHeight(document.documentElement.scrollHeight || document.body.scrollHeight);
     }
   }, [node]);
 
